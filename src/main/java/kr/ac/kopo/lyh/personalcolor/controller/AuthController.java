@@ -84,7 +84,7 @@ public class AuthController {
             return ResponseEntity.ok(LoginResponse.builder()
                     .success(true)
                     .message("로그인 성공")
-                    .redirectUrl("/upload") // 로그인 후 바로 업로드 페이지로 이동
+                    .redirectUrl("/index")
                     .build());
 
         } catch (Exception e) {
@@ -95,16 +95,14 @@ public class AuthController {
                     .build());
         }
     }
-
     @PostMapping("/logout")
-    @ResponseBody
-    public ResponseEntity<?> logout(HttpServletRequest request) {
+    public String logout(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
         }
         SecurityContextHolder.clearContext();
         log.info("사용자 로그아웃");
-        return ResponseEntity.ok().build();
+        return "redirect:/home";
     }
 }
