@@ -26,6 +26,13 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
+    private kr.ac.kopo.lyh.personalcolor.entity.User.Gender convertGender(kr.ac.kopo.lyh.personalcolor.controller.dto.Gender dtoGender) {
+        if (dtoGender == null) {
+            return null;
+        }
+        // 이름으로 변환 (같은 이름을 가진 동일한 값을 가진다고 가정)
+        return kr.ac.kopo.lyh.personalcolor.entity.User.Gender.valueOf(dtoGender.name());
+    }
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -61,7 +68,7 @@ public class UserService implements UserDetailsService {
                 .email(signupForm.getEmail())
                 .password(encodedPassword)
                 .name(signupForm.getName())
-                .gender(signupForm.getGender())
+                .gender(convertGender(signupForm.getGender()))
                 .role(User.Role.USER)
                 .enabled(true)
                 .accountNonExpired(true)

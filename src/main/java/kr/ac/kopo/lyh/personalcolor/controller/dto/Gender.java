@@ -9,6 +9,20 @@ public enum Gender {
         this.description = description;
     }
 
+    public enum Role {
+        USER("사용자"),
+        ADMIN("관리자");
+
+        private final String displayName;
+
+        Role(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+    }
     public String getDescription() {
         return description;
     }

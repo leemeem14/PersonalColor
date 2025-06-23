@@ -17,7 +17,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.math.BigDecimal;
 
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 
@@ -117,7 +119,8 @@ public class UploadController {
         model.addAttribute("analysis", analysis);
         model.addAttribute("colorType", analysis.getColorType().getDisplayName());
         model.addAttribute("description", analysis.getDescription());
-        model.addAttribute("confidence", Math.round(analysis.getConfidence() * 100));
+        BigDecimal confidence = analysis.getConfidence().multiply(BigDecimal.valueOf(100));
+        model.addAttribute("confidence", confidence.setScale(0, RoundingMode.HALF_UP).intValue());
         model.addAttribute("uploadedFile", analysis.getStoredFileName());
 
         return "results";
