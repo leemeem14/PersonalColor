@@ -1,16 +1,15 @@
 package kr.ac.kopo.lyh.personalcolor.service;
 
+import kr.ac.kopo.lyh.personalcolor.config.ApplicationConfig;
 import kr.ac.kopo.lyh.personalcolor.exception.FileStorageException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
@@ -20,37 +19,28 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 /**
- * 파일 저장, 로드, 삭제 등의 파일 관리를 담당하는 서비스 클래스
- * Spring Boot 3.4.0 호환
+ * 파일 저장 서비스 - Spring Boot 3.4 최적화
+ * Path API 및 보안 강화
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileStorageService {
 
-    @Value("${file.upload.dir:uploads}")
-    private String uploadDir;
-
-    @Value("${file.max.size:10485760}") // 10MB 기본값
-    private long maxFileSize;
-
-    @Value("#{'${file.allowed.extensions:.jpg,.jpeg,.png,.gif,.bmp,.webp}'.split(',')}")
-    private List<String> allowedExtensions;
+    private final ApplicationConfig.FileStorageProperties fileStorageProperties;
 
     /**
-     * 서비스 초기화 시 업로드 디렉토리 생성
+     * 업로드 디렉토리 초기화
      */
-    @PostConstruct
     public void init() {
         try {
             Path uploadPath = getUploadPath();
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
-                log.info("업로드 디렉토리 생성됨: {}", uploadPath.toAbsolutePath());
+                log.info("업로드 디렉토리 생성: {}", uploadPath.toAbsolutePath());
             }
         } catch (IOException e) {
             throw new FileStorageException("업로드 디렉토리 생성 실패", e);
@@ -59,8 +49,6 @@ public class FileStorageService {
 
     /**
      * 파일 저장
-     * @param file 저장할 파일
-     * @return 저장된 파일명
      */
     public String storeFile(MultipartFile file) {
         validateFile(file);
@@ -69,6 +57,11 @@ public class FileStorageService {
         String storedFilename = generateStoredFilename(originalFilename);
 
         try {
+            // 경로 순회 공격 방지
+            if (originalFilename.contains("..")) {
+                throw new FileStorageException("파일명에 상위 경로 참조가 포함되어 있습니다: " + originalFilename);
+            }
+
             Path targetLocation = getUploadPath().resolve(storedFilename);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
@@ -82,8 +75,6 @@ public class FileStorageService {
 
     /**
      * 파일 로드
-     * @param filename 로드할 파일명
-     * @return 파일 리소스
      */
     public Resource loadFile(String filename) {
         try {
@@ -102,7 +93,6 @@ public class FileStorageService {
 
     /**
      * 파일 삭제
-     * @param filename 삭제할 파일명
      */
     public void deleteFile(String filename) {
         try {
@@ -116,8 +106,6 @@ public class FileStorageService {
 
     /**
      * 파일 존재 여부 확인
-     * @param filename 확인할 파일명
-     * @return 파일 존재 여부
      */
     public boolean exists(String filename) {
         Path filePath = getUploadPath().resolve(filename).normalize();
@@ -126,8 +114,6 @@ public class FileStorageService {
 
     /**
      * 파일 크기 반환
-     * @param filename 파일명
-     * @return 파일 크기 (바이트)
      */
     public long getFileSize(String filename) {
         try {
@@ -140,22 +126,16 @@ public class FileStorageService {
 
     // === 내부 메서드들 ===
 
-    /**
-     * 업로드 경로 반환
-     */
     private Path getUploadPath() {
-        return Paths.get(uploadDir).toAbsolutePath().normalize();
+        return Paths.get(fileStorageProperties.uploadDir()).toAbsolutePath().normalize();
     }
 
-    /**
-     * 파일 유효성 검증
-     */
     private void validateFile(MultipartFile file) {
         if (file.isEmpty()) {
             throw new FileStorageException("빈 파일은 저장할 수 없습니다.");
         }
 
-        if (file.getSize() > maxFileSize) {
+        if (file.getSize() > fileStorageProperties.maxFileSize()) {
             throw new FileStorageException("파일 크기가 허용된 최대 크기를 초과합니다: " + file.getSize());
         }
 
@@ -170,9 +150,6 @@ public class FileStorageService {
         }
     }
 
-    /**
-     * 저장될 파일명 생성 (중복 방지)
-     */
     private String generateStoredFilename(String originalFilename) {
         String extension = getFileExtension(originalFilename);
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
@@ -181,9 +158,6 @@ public class FileStorageService {
         return String.format("%s_%s%s", timestamp, uuid, extension);
     }
 
-    /**
-     * 파일 확장자 추출
-     */
     private String getFileExtension(String filename) {
         int lastDotIndex = filename.lastIndexOf('.');
         if (lastDotIndex == -1) {
@@ -192,10 +166,7 @@ public class FileStorageService {
         return filename.substring(lastDotIndex).toLowerCase();
     }
 
-    /**
-     * 허용된 확장자인지 확인
-     */
     private boolean isAllowedExtension(String extension) {
-        return allowedExtensions.contains(extension);
+        return Arrays.asList(fileStorageProperties.allowedExtensions()).contains(extension);
     }
 }
