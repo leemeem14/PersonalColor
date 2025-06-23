@@ -2,8 +2,8 @@ package kr.ac.kopo.lyh.personalcolor.service;
 
 import kr.ac.kopo.lyh.personalcolor.controller.dto.SignupForm;
 import kr.ac.kopo.lyh.personalcolor.entity.User;
-import kr.ac.kopo.lyh.personalcolor.exception.GlobalExceptionHandler;
-import kr.ac.kopo.lyh.personalcolor.exception.GlobalExceptionHandler;
+import kr.ac.kopo.lyh.personalcolor.exception.UserNotFoundException;
+import kr.ac.kopo.lyh.personalcolor.exception.DuplicateEmailException;
 import kr.ac.kopo.lyh.personalcolor.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
