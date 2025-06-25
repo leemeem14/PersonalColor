@@ -22,10 +22,6 @@ public class WebConfig implements WebMvcConfigurer {
         // 업로드된 파일 핸들러
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:uploads/");
-
-        registry.addResourceHandler("/favicon.ico")
-                .addResourceLocations("classpath:/static/");
-
     }
 
     @Override

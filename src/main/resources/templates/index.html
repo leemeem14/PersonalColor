@@ -11,8 +11,8 @@
     }
 
     .navbar {
-      background-color: black;
-      color: white;
+      background-color: white;
+      color: black;
       display: flex;
       align-items: center;
       padding: 10px 20px;
@@ -30,7 +30,7 @@
     }
 
     .nav-link {
-      color: white;
+      color: black;
       text-decoration: none;
       font-weight: bold;
     }
@@ -155,20 +155,23 @@
     <a class="nav-link" th:href="@{/login}" id="loginLink">로그인</a>
     <a class="nav-link" th:href="@{/signup}">회원가입</a>
     <a class="nav-link" href="#" id="uploadLink">사진 업로드</a>
-    <a class="nav-link" href="#" id="logoutLink" style="display: none;">로그아웃</a>
+    <form th:action="@{/logout}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+      <button type="submit">로그아웃</button>
+    </form>
   </div>
 </div>
 
 <div class="main-content">
-  <!-- 왼쪽 위 -->
-  <img src="/images/ws.png" alt="Warm Spring" class="season-img img-topleft">
-  <!-- 오른쪽 위 -->
-  <img src="/images/cs.png" alt="Cool Summer" class="season-img img-topright">
-  <!-- 왼쪽 아래 -->
-  <img src="/images/wa.png" alt="Warm Autumn" class="season-img img-bottomleft">
-  <!-- 오른쪽 아래 -->
-  <img src="/images/cw.png" alt="Cool Winter" class="season-img img-bottomright">
-  <!-- 중앙 글씨 -->
+<!--  &lt;!&ndash; 왼쪽 위 &ndash;&gt;-->
+<!--  <img src="/images/ws.png" alt="Warm Spring" class="season-img img-topleft">-->
+<!--  &lt;!&ndash; 오른쪽 위 &ndash;&gt;-->
+<!--  <img src="/images/cs.png" alt="Cool Summer" class="season-img img-topright">-->
+<!--  &lt;!&ndash; 왼쪽 아래 &ndash;&gt;-->
+<!--  <img src="/images/wa.png" alt="Warm Autumn" class="season-img img-bottomleft">-->
+<!--  &lt;!&ndash; 오른쪽 아래 &ndash;&gt;-->
+<!--  <img src="/images/cw.png" alt="Cool Winter" class="season-img img-bottomright">-->
+<!--  &lt;!&ndash; 중앙 글씨 &ndash;&gt;-->
   <div class="main-content-text">
     당신에게 맞는 옷 색깔을 찾아볼까요?
   </div>
